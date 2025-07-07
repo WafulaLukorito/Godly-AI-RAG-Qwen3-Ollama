@@ -75,20 +75,3 @@ def get_vector_store(embedding_function):
 
 embedding_function = get_embedding_function()
 vector_store = get_vector_store(embeddings)
-
-
-#* Index Documents (Embed and Store)
-
-def index_documents(chunks, embedding_function, persist_directory=CHROMA_PATH):
-    """
-    Index the document chunks into the vector store.
-    """
-    print (f"Indexing {len(chunks)} document chunks...")
-    vector_store = Chroma.from_documents(
-        documents=chunks,
-        embedding=embedding_function,
-        persist_directory=persist_directory
-    )
-   vector_store.persist() #ensure data is saved
-   print (f"Indexing complete. Data saved to: {persist_directory}")
-   return vector_store
