@@ -107,39 +107,3 @@ Assemble Componenets into a LangChain Expression Language (LCEL) Chain
 This chain will take a user query, retrieve relevant documents from the vector store, and generate a response using the LLM.
 '''
 
-from langchain_ollama import ChatOllama
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
-
-def create_rag_chain(vector_store, llm_model_name="qwen3:8b", context_window=8192):
-    
-    """
-    Create a RAG chain that retrieves relevant documents and generates a response.
-    """
-    # Initialize the LLM
-    llm = ChatOllama(
-        model=llm_model_name,
-        temperature=0,
-        num_ctx=context_window
-    )
-    print(f"Initialized ChatOllama with LLM: {llm_model_name} with context window: {context_window}")
-    
-    #Create the retriever
-    retriever = vector_store.as_retriever(
-        search_type="similarity",
-        search_kwargs={"k": 5}  # Retrieve top 5 relevant chunks
-    )
-    print("Retriever initialized to fetch top 5 relevant chunks.")
-    
-    # Define the prompt template
-    template = """
-    You are an assistant to help Christians find comfort and guidance in the Bible.
-    Question: {question}
-    Context: {context}
-    Answer:
-    """
-
-    # Create the prompt template
-    prompt = ChatPromptTemplate.from_template(template)
-    prompt = ChatPromptTemplate.from_messages([
