@@ -1,10 +1,6 @@
 venv/
 /.history
 /venv
-chains/__pycache__/__init__.cpython-313.pyc
-config/__pycache__/__init__.cpython-313.pyc
-config/__pycache__/settings.cpython-313.pyc
-data_processing/__pycache__/__init__.cpython-313.pyc
-interface/__pycache__/__init__.cpython-313.pyc
-utils/__pycache__/__init__.cpython-313.pyc
-vector_db/__pycache__/__init__.cpython-313.pyc
+*.pyc
+__pycache__/
+logs/biblical_counselor.log

@@ -2,7 +2,7 @@ from typing import Optional
 from langchain_chroma import Chroma
 from data_processing.bible_loader import load_bible
 from data_processing.text_splitter import ScriptureSplitter, should_split
-from embeddings import EmbeddingManager
+from vector_db.embeddings import EmbeddingManager
 from config.settings import config
 import shutil
 import os
