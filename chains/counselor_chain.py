@@ -3,6 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_ollama import ChatOllama
+
 from langchain_core.vectorstores import VectorStoreRetriever
 from config.settings import config
 import logging
@@ -17,7 +18,7 @@ class CounselorChainBuilder:
     def __init__(self,
                  model_name: Optional[str] = None,
                  extra_args: Optional[list] = None,
-                 temperature: float = 0.4,
+                 temperature: float = 1.2,
                  num_ctx: int = 4096):
         self.model_name = model_name or config.llm_model
         self.extra_args = extra_args or []
@@ -94,7 +95,7 @@ Structure your response:
 2. [Verses] 1-3 passages with EXACT references:
     - [Book Chapter:Verse] "quoted text"
 3. [Application] Practical wisdom from these verses
-4. [Prayer] 2-3 sentence prayer""")
+4. [Prayer] A short prayer in first person to help the user in the situation they're facing""")
 
     def _format_docs(self, docs) -> str:
         """Format retrieved documents with metadata."""

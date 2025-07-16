@@ -7,9 +7,10 @@ import readline  # For better input handling
 
 logger = logging.getLogger(__name__)
 
+
 class ChatInterface:
     """Handles the interactive counseling session."""
-    
+
     def __init__(self, chain: Runnable):
         self.chain = chain
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -27,17 +28,17 @@ class ChatInterface:
     def start_session(self):
         """Run the main chat loop."""
         self._print_welcome()
-        
+
         while True:
             try:
                 user_input = self._get_user_input()
-                
+
                 if self._should_exit(user_input):
                     self._end_session()
                     break
-                
+
                 self._process_query(user_input)
-                
+
             except KeyboardInterrupt:
                 self._handle_interrupt()
                 break
@@ -69,16 +70,17 @@ class ChatInterface:
         """Handle a single user query."""
         start_time = time.time()
         logger.info(f"QUERY: {query[:200]}")  # Truncate long queries
-        
+
         print("\n\033[3;36mSearching Scripture for you...\033[0m")
-        
+
         try:
             response = self.chain.invoke(query)
             self._display_response(response, time.time() - start_time)
             self._log_interaction(query, response)
         except Exception as e:
             logger.error(f"Response generation failed: {e}", exc_info=True)
-            print("\n\033[0;31mI encountered an error. Let's try again...\033[0m")
+            print(
+                "\n\033[0;31mI encountered an error. Let's try again...\033[0m")
 
     def _display_response(self, response: str, response_time: float):
         """Format and display the counselor's response."""
@@ -87,7 +89,8 @@ class ChatInterface:
 
     def _log_interaction(self, query: str, response: str):
         """Log the full interaction."""
-        logger.info(f"RESPONSE: {response[:500]}...")  # Truncate long responses
+        logger.info(
+            f"RESPONSE: {response[:500]}...")  # Truncate long responses
         with open(self.log_file, 'a') as f:
             f.write(f"\nQ: {query}\nA: {response}\n{'='*50}\n")
 
@@ -104,5 +107,5 @@ class ChatInterface:
     def _end_session(self):
         """Clean up session ending."""
         logger.info("SESSION ENDED")
-        print("\n\033[0;32mMay God bless you. Remember Jeremiah 29:11.\033[0m")
-        
+        print(
+            "\n\033[0;32mMay God bless you. Remember Jeremiah 29:11. God has a plan for your welfare\033[0m")
