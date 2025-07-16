@@ -5,3 +5,4 @@ venv/
 __pycache__/
 logs/biblical_counselor.log
 /bible_chroma_db
+/logs/session_20250716_130423.log
