@@ -13,9 +13,10 @@ from langchain.docstore.document import Document
 import logging
 from datetime import datetime
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logging.basicConfig(filename='app_activity.log', filemode='a', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='app_activity.log', filemode='a',
+                    level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 # Configuration
@@ -31,26 +32,27 @@ CONFIG = {
     "score_threshold": 0.3
 }
 
+
 def load_bible():
     """Load and parse XML Bible with enhanced logging."""
     logging.info("Starting Bible XML loading process...")
     bible_path = os.path.join(CONFIG["data_path"], CONFIG["bible_xml"])
-    
+
     if not os.path.exists(bible_path):
         logging.error(f"Bible XML not found at {bible_path}")
         raise FileNotFoundError(f"Bible XML not found at {bible_path}")
-    
+
     try:
         start_time = time.time()
         tree = ET.parse(bible_path)
         root = tree.getroot()
         documents = []
         verse_count = 0
-        
+
         for book in root.findall(".//book"):
             book_name = book.get("name", f"Book_{book.get('number')}")
             logging.info(f"Processing {book_name}...")
-            
+
             for chapter in book.findall("chapter"):
                 for verse in chapter.findall("verse"):
                     verse_text = verse.text.strip()
@@ -62,21 +64,23 @@ def load_bible():
                         "canonical_reference": f"{book_name} {chapter_num}:{verse_num}",
                         "timestamp": datetime.now().isoformat()
                     }
-                    documents.append(Document(page_content=verse_text, metadata=metadata))
+                    documents.append(
+                        Document(page_content=verse_text, metadata=metadata))
                     verse_count += 1
-                    
+
                     # Log every 100 verses for progress tracking
                     if verse_count % 100 == 0:
                         logging.info(f"Processed {verse_count} verses...")
-        
-        logging.info(f"Completed loading {verse_count} verses in {time.time()-start_time:.2f}s")
+
+        logging.info(
+            f"Completed loading {verse_count} verses in {time.time()-start_time:.2f}s")
         return documents
-    
+
     except Exception as e:
         logging.error(f"Error processing XML Bible: {str(e)}", exc_info=True)
         raise
-    
-    
+
+
 def split_scriptures(documents, log_file='scripture_split_log.txt', update_interval=10):
     """Split Bible verses with context-aware chunking."""
     print("Starting scripture processing...")
@@ -97,12 +101,13 @@ def split_scriptures(documents, log_file='scripture_split_log.txt', update_inter
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=CONFIG["chunk_size"],
         chunk_overlap=CONFIG["chunk_overlap"],
-        separators=["\n\n", "\n", ". ", "? ", "! "],  # Natural verse boundaries
+        # Natural verse boundaries
+        separators=["\n\n", "\n", ". ", "? ", "! "],
         length_function=len,
         keep_separator=True,
         is_separator_regex=False
     )
-    
+
     chunks = text_splitter.split_documents(documents)
 
     # Stop updates
@@ -117,8 +122,10 @@ def split_scriptures(documents, log_file='scripture_split_log.txt', update_inter
     with open(log_file, 'a') as log:
         log.write(f"Verses processed: {len(documents)}\n")
         log.write(f"Chunks generated: {len(chunks)}\n")
-        log.write(f"Chunk size: {CONFIG['chunk_size']} (overlap: {CONFIG['chunk_overlap']})\n")
-        log.write(f"Time: {total_time:.2f}s | {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        log.write(
+            f"Chunk size: {CONFIG['chunk_size']} (overlap: {CONFIG['chunk_overlap']})\n")
+        log.write(
+            f"Time: {total_time:.2f}s | {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
         log.write('-' * 40 + '\n')
 
     return chunks
@@ -140,7 +147,9 @@ def setup_scripture_store():
         embedding_function = get_embedding_function()
 
         if os.path.exists(CONFIG["chroma_path"]) and os.listdir(CONFIG["chroma_path"]):
-            logging.info(f"Loading existing vector store from {CONFIG['chroma_path']}") # Added path to log
+            # Added path to log
+            logging.info(
+                f"Loading existing vector store from {CONFIG['chroma_path']}")
             return Chroma(
                 persist_directory=CONFIG["chroma_path"],
                 embedding_function=embedding_function
@@ -148,18 +157,22 @@ def setup_scripture_store():
 
         logging.info("Building new vector store from XML...")
         verses = load_bible()
-        
+
         # Only split if any verse exceeds chunk size
-        long_verses = [v for v in verses if len(v.page_content) > CONFIG["chunk_size"]]
+        long_verses = [v for v in verses if len(
+            v.page_content) > CONFIG["chunk_size"]]
         if long_verses:
-            logging.warning(f"Found {len(long_verses)} verses exceeding chunk size, splitting...")
+            logging.warning(
+                f"Found {len(long_verses)} verses exceeding chunk size, splitting...")
             verses = split_scriptures(verses)
         else:
-            logging.info("No verses exceeded chunk size, skipping splitting step.")
+            logging.info(
+                "No verses exceeded chunk size, skipping splitting step.")
 
         # --- THIS IS THE SLOW PART: ADDING PROGRESS TRACKING ---
-        logging.info(f"Starting embedding process for {len(verses)} scripture chunks. This may take a while...")
-        
+        logging.info(
+            f"Starting embedding process for {len(verses)} scripture chunks. This may take a while...")
+
         # Start a periodic update thread for embedding
         embedding_start_time = time.time()
         embedding_updates_active = True
@@ -167,8 +180,10 @@ def setup_scripture_store():
         def periodic_embedding_update():
             while embedding_updates_active:
                 elapsed = time.time() - embedding_start_time
-                print(f"\033[3;35mEmbedding chunks in progress... ({int(elapsed)}s elapsed)\033[0m") # Added color
-                time.sleep(15) # Increased interval slightly for embedding
+                # Added color
+                print(
+                    f"\033[3;35mEmbedding chunks in progress... ({int(elapsed)}s elapsed)\033[0m")
+                time.sleep(15)  # Increased interval slightly for embedding
 
         embedding_thread = threading.Thread(target=periodic_embedding_update)
         embedding_thread.start()
@@ -184,14 +199,15 @@ def setup_scripture_store():
         embedding_thread.join()
         # --- END OF SLOW PART TRACKING ---
 
-        logging.info(f"Vector store created and embeddings completed in {time.time()-embedding_start_time:.2f}s")
+        logging.info(
+            f"Vector store created and embeddings completed in {time.time()-embedding_start_time:.2f}s")
         return db
 
     except Exception as e:
         logging.error("Failed to setup vector store", exc_info=True)
         raise
-    
-    
+
+
 def create_counselor_chain(vector_store):
     """Create counseling chain with enhanced verse handling."""
     llm = ChatOllama(
@@ -249,66 +265,74 @@ def create_counselor_chain(vector_store):
         | StrOutputParser()
     )
 
+
 def chat_with_counselor(chain):
     """Interactive session with enhanced safeguards."""
     print("\n\033[1;36mWelcome to Biblical Counselor (XML Edition)\033[0m")
     print("\033[0;33mNote: I am an AI assistant, not a substitute for professional counseling.\033[0m")
     print("Share your concern (type 'quit' to exit):\n")
-    
+
     session_id = datetime.now().strftime("%Y%m%d%H%M%S")
     logging.info(f"Starting counseling session {session_id}")
-    
+
     while True:
         try:
             user_input = input("\033[1;33mYou:\033[0m ").strip()
             if user_input.lower() in ['quit', 'exit', 'bye']:
                 logging.info(f"Session {session_id} ended by user")
-                print("\nMay God bless you. Remember Jeremiah 29:11 - God has plans for your welfare.")
+                print(
+                    "\nMay God bless you. Remember Jeremiah 29:11 - God has plans for your welfare.")
                 break
-                
+
             if not user_input:
                 print("Please share what's on your heart...")
                 continue
 
-            logging.info(f"Session {session_id} query: {user_input[:50]}...")  # Log truncated query
+            # Log truncated query
+            logging.info(f"Session {session_id} query: {user_input[:50]}...")
             start_time = time.time()
-            
+
             print("\n\033[3;36mSearching Scripture for you...\033[0m")
             response = chain.invoke(user_input)
-            
+
             response_time = time.time() - start_time
             logging.info(f"Response generated in {response_time:.2f}s")
-            
+
             # Print formatted response
             print(f"\n\033[1;34mCounselor:\033[0m {response}")
             print(f"\033[0;37m(Generated in {response_time:.2f}s)\033[0m")
-            
+
             # Log counseling interaction
             with open("counseling_logs.txt", "a") as log:
                 log.write(f"\n[{datetime.now()}] Session {session_id}\n")
                 log.write(f"Query: {user_input}\n")
-                log.write(f"Response: {response[:500]}...\n")  # Store truncated response
+                # Store truncated response
+                log.write(f"Response: {response[:500]}...\n")
                 log.write("-"*50 + "\n")
-            
+
         except KeyboardInterrupt:
             logging.info("Session interrupted by user")
             print("\n\033[0;33mPeace be with you. Come back anytime.\033[0m")
             break
         except Exception as e:
-            logging.error(f"Error in session {session_id}: {str(e)}", exc_info=True)
-            print("\n\033[0;31mI encountered an error. Let's try again...\033[0m")
+            logging.error(
+                f"Error in session {session_id}: {str(e)}", exc_info=True)
+            print(
+                "\n\033[0;31mI encountered an error. Let's try again...\033[0m")
+
 
 def main():
     print("\nInitializing Biblical Counselor (XML Version)...")
     try:
         scripture_store = setup_scripture_store()
         counselor_chain = create_counselor_chain(scripture_store)
-        
+
         print("\nCounselor ready. Share your burden:")
         chat_with_counselor(counselor_chain)
-        
+
     except Exception as e:
         print(f"\nFailed to start: {e}")
+
 
 if __name__ == "__main__":
     main()
