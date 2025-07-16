@@ -13,7 +13,7 @@ from config import settings
 from vector_db.chroma_manager import ChromaManager
 from chains.counselor_chain import CounselorChainBuilder
 from interface.chat_ui import ChatInterface
-from utils.logging import log_manager
+from utils.log_manager import log_manager
 
 
 def parse_args() -> Tuple[argparse.Namespace, list]:

@@ -1,6 +1,5 @@
 from pydantic import BaseSettings
 from typing import Literal
-import logging
 
 
 class Settings(BaseSettings):
@@ -47,6 +46,6 @@ def get_logger_config() -> dict:
         'level': config.logging_level,
         'format': config.logging_format,
         'file': config.logging_file,
-        'rotation': "10 MB",  # Rotate logs at 10MB
-        'retention': "7 days"  # Keep logs for 7 days
+        'rotation': "5 MB",
+        'retention': "100 days"
     }
