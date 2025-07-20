@@ -90,12 +90,17 @@ Person's Situation: {question}
 
 Relevant Scripture: {context}
 
+Consider the full conversation history
+
 Structure your response:
-1. [Empathy] Acknowledge their feelings
-2. [Verses] 1-3 passages with EXACT references:
-    - [Book Chapter:Verse] "quoted text"
-3. [Application] Practical wisdom from these verses
-4. [Prayer] A short prayer in first person to help the user in the situation they're facing""")
+
+1. Acknowledge their feelings and empathise with their situation
+2. Provide 1-3 relevant Bible verses with FULL references (e.g., [John 3:16-17])
+3. Connect verses to their situation
+4. End with a short prayer
+
+Always include verse references in this format: [Book Chapter:Verse] or
+[Book Chapter:Verse-Verse]""")
 
     def _format_docs(self, docs) -> str:
         """Format retrieved documents with metadata."""

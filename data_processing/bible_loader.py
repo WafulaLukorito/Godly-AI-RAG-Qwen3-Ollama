@@ -33,34 +33,34 @@ def load_bible() -> List[Document]:
         documents = []
 
         for book in root.findall(".//book"):
-        book_num = book.get("number")
-        book_name = get_book_name(book_num)  # Use mapping function
-        logger.debug(f"Processing {book_name}")
+            book_num = book.get("number")
+            book_name = get_book_name(book_num)  # Use mapping function
+            logger.debug(f"Processing {book_name}")
 
-        for chapter in book.findall("chapter"):
-            chapter_num = chapter.get("number")
-            for verse in chapter.findall("verse"):
-                verse_num = verse.get("number")
-                verse_text = verse.text.strip() if verse.text else ""
+            for chapter in book.findall("chapter"):
+                chapter_num = chapter.get("number")
+                for verse in chapter.findall("verse"):
+                    verse_num = verse.get("number")
+                    verse_text = verse.text.strip() if verse.text else ""
 
-                metadata = {
-                    "book": book_name,  # Now using proper name
-                    "book_number": book_num,  # Keep number for reference
-                    "chapter": chapter_num,
-                    "verse": verse_num,
-                    "reference": f"{book_name} {chapter_num}:{verse_num}",
-                    "timestamp": datetime.now().isoformat()
-                }
+                    metadata = {
+                        "book": book_name,  # Now using proper name
+                        "book_number": book_num,  # Keep number for reference
+                        "chapter": chapter_num,
+                        "verse": verse_num,
+                        "reference": f"{book_name} {chapter_num}:{verse_num}",
+                        "timestamp": datetime.now().isoformat()
+                    }
 
-                documents.append(
-                    Document(
-                        page_content=verse_text,
-                        metadata=metadata
+                    documents.append(
+                        Document(
+                            page_content=verse_text,
+                            metadata=metadata
+                        )
                     )
-                )
 
-        logger.info(f"Successfully loaded {len(documents)} verses")
-        return documents
+            logger.info(f"Successfully loaded {len(documents)} verses")
+            return documents
 
     except ET.ParseError as e:
         logger.error(f"XML parsing failed: {e}", exc_info=True)
